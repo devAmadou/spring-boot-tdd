@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         registry = "amkam009/demo-devsecops"
-        registryCredential = 'docker-hub'
+        registryCredential = 'my-docker-hub'
     }
 
     stages {
@@ -39,7 +39,7 @@ pipeline {
 
         stage('Docker Build and Push') {
             steps {
-                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+                withDockerRegistry([credentialsId: "my-docker-hub", url: ""]) {
                     sh 'printenv'
                     sh 'docker build -t $registry:$BUILD_NUMBER .'
                     sh 'docker push $registry:$BUILD_NUMBER'
