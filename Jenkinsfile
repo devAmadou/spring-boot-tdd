@@ -25,7 +25,7 @@ pipeline {
                 }
             }
 
-        stage('Unit Tests - JUnit and Jacoco') {
+        stage('Unit Tests - JUnit and Jacoco test all Tests') {
             steps {
                     sh "mvn test"
                 }
@@ -38,6 +38,7 @@ pipeline {
         }
 
         stage('Docker Build and Push') {
+            when { expression { false } }
             steps {
                 withDockerRegistry([credentialsId: "my-docker-hub", url: ""]) {
                     sh 'printenv'
@@ -48,12 +49,14 @@ pipeline {
         }
 
         stage('Remove Unused docker image') {
+            when { expression { false } }
             steps{
                 sh "docker rmi $registry:$BUILD_NUMBER"
             }
         }
 
         stage('Kubernetes Deployment - DEV') {
+            when { expression { false } }
             steps {
                 withKubeConfig([credentialsId: 'kubernetes-config']) {
                     sh "sed -i 's#replace#${registry}:${BUILD_NUMBER}#g' k8s_deployment_service.yaml"
@@ -64,7 +67,7 @@ pipeline {
         stage('Unit Tests - JUnit and Jacoco') {
             steps {
                 sh "mvn test -Dgroups=unitaires"
-                }
+            }
             post {
                 always {
                     junit 'target/surefire-reports/*.xml'
@@ -76,13 +79,13 @@ pipeline {
         stage('Service - IntegrationTest') {
             steps{
                 sh "mvn test -Dgroups=integrations"
-                }
+            }
         }
 
         stage('Web - IntegrationTest') {
             steps{
                 sh "mvn test -Dgroups=web"
-                }
+            }
         }
     }
 }
