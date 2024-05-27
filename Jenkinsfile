@@ -37,33 +37,6 @@ pipeline {
                     }
         }
 
-        stage('Docker Build and Push') {
-            when { expression { false } }
-            steps {
-                withDockerRegistry([credentialsId: "my-docker-hub", url: ""]) {
-                    sh 'printenv'
-                    sh 'docker build -t $registry:$BUILD_NUMBER .'
-                    sh 'docker push $registry:$BUILD_NUMBER'
-                    }
-            }
-        }
-
-        stage('Remove Unused docker image') {
-            when { expression { false } }
-            steps{
-                sh "docker rmi $registry:$BUILD_NUMBER"
-            }
-        }
-
-        stage('Kubernetes Deployment - DEV') {
-            when { expression { false } }
-            steps {
-                withKubeConfig([credentialsId: 'kubernetes-config']) {
-                    sh "sed -i 's#replace#${registry}:${BUILD_NUMBER}#g' k8s_deployment_service.yaml"
-                    sh "kubectl apply -f k8s_deployment_service.yaml" }
-            }
-        }
-
         stage('Unit Tests - JUnit and Jacoco') {
             steps {
                 sh "mvn test -Dgroups=unitaires"
@@ -85,6 +58,44 @@ pipeline {
         stage('Web - IntegrationTest') {
             steps{
                 sh "mvn test -Dgroups=web"
+            }
+        }
+
+        stage('Mutation Tests - PIT') {
+            steps {
+                sh "mvn org.pitest:pitest-maven:mutationCoverage"
+            }
+            post {
+                always {
+                    pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+                }
+            }
+        }
+
+        stage('Docker Build and Push') {
+            when { expression { false } }
+            steps {
+                withDockerRegistry([credentialsId: "my-docker-hub", url: ""]) {
+                    sh 'printenv'
+                    sh 'docker build -t $registry:$BUILD_NUMBER .'
+                    sh 'docker push $registry:$BUILD_NUMBER'
+                }
+            }
+        }
+
+        stage('Remove Unused docker image') {
+            when { expression { false } }
+            steps{
+                sh "docker rmi $registry:$BUILD_NUMBER"
+            }
+        }
+
+        stage('Kubernetes Deployment - DEV') {
+            when { expression { false } }
+            steps {
+                withKubeConfig([credentialsId: 'kubernetes-config']) {
+                sh "sed -i 's#replace#${registry}:${BUILD_NUMBER}#g' k8s_deployment_service.yaml"
+                sh "kubectl apply -f k8s_deployment_service.yaml" }
             }
         }
     }
