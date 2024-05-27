@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: devsecops
-    name: devsecops
+  name: devsecops
 spec:
   replicas: 2
   selector:
@@ -16,8 +16,8 @@ spec:
         app: devsecops
     spec:
       containers:
-        - image: demo-devsecops
-          name: devsecops-container
+      - image: amkam009/demo-devsecops:11
+        name: devsecops-container
 ---
 apiVersion: v1
 kind: Service
@@ -32,4 +32,4 @@ spec:
     targetPort: 8180
   selector:
     app: devsecops
-    type: NodePort
+  type: NodePort
