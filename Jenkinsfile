@@ -1,5 +1,11 @@
 pipeline {
     agent any
+
+    environment {
+        registry = "amkam009/demo-devsecops"
+        registryCredential = 'docker-hub'
+    }
+
     stages {
         stage('GitHub') {
             steps {
@@ -29,6 +35,22 @@ pipeline {
                             jacoco execPattern: 'target/jacoco.exec'
                         }
                     }
-                }
+        }
+
+        stage('Docker Build and Push') {
+            steps {
+                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+                    sh 'printenv'
+                    sh 'docker build -t $registry:$BUILD_NUMBER .'
+                    sh 'docker push $registry:$BUILD_NUMBER'
+                    }
+            }
+        }
+
+        stage('Remove Unused docker image') {
+            steps{
+                sh "docker rmi $registry:$BUILD_NUMBER"
+            }
+        }
     }
 }
