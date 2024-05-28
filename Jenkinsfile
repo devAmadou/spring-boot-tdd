@@ -78,11 +78,19 @@ pipeline {
         stage('Code coverage') {
             steps {
                 withSonarQubeEnv('sonar_server') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=$PROJECT_KEY -Dsonar.projectName=$PROJECT_NAME -Dsonar.java.coveragePlugin=jacoco -Dsonar.jacoco.reportPath=target/jacoco.exec -Dsonar.java.binaries=target/classes/ '''
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=$PROJECT_KEY -Dsonar.projectName=$PROJECT_NAME -Dsonar.java.coveragePlugin=jacoco -Dsonar.jacoco.reportPath=target/jacoco.exec -Dsonar.coverage.exclusions=src/test/**/*,src/**/web/**/*,**/Application.java -Dsonar.java.binaries=target/classes/ '''
                 }
                  timeout(time: 1, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                  }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
