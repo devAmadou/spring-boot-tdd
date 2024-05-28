@@ -87,15 +87,16 @@ pipeline {
         }
 
         stage('Vulnerability Scan') {
-          steps {
-            parallel("Trivy Scan": {
-                 sh "bash trivy-docker-image-scan.sh"
-            })
-          }
-          post {
-              always {
-                 dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-              }
+            steps {
+                parallel("Trivy Scan": {
+                    sh "bash trivy-docker-image-scan.sh"
+                })
+            }
+            post {
+                always {
+                    dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+                }
+            }
         }
 
         stage("Quality Gate") {
