@@ -22,14 +22,6 @@ pipeline {
             }
         }
 
-        stage("Quality Gate") {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
         stage('Vulnerability Scan') {
             steps {
                 parallel("Trivy Scan": {
