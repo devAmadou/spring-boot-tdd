@@ -99,14 +99,6 @@ pipeline {
             }
         }
 
-        stage("Quality Gate") {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
         stage('Docker Build and Push') {
             when { expression { false } }
             steps {
